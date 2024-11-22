@@ -1,0 +1,21 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: black;
+}
+.canvas,
+.wrapper {
+  margin: 0 auto;
+  display: block;
+  position: fixed;
+}
+
+.image {
+  width: 16rem;
+  height: 24rem;
+  position: absolute;
+  inset: auto;
+  margin: auto;
+  pointer-events: none;
+}
