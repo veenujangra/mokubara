@@ -2,7 +2,7 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background-color: black;
+  // background-color: black;
 }
 .canvas,
 .wrapper {
@@ -17,5 +17,5 @@ body {
   position: absolute;
   inset: auto;
   margin: auto;
-  pointer-events: none;
+  // pointer-events: none;
 }

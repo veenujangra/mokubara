@@ -67,7 +67,7 @@ class App {
     img.src = '/black.jpg'
     img.className = `image image-${this.assets.length}`
     img.style.position = 'absolute'
-    // img.style.opacity = '0'
+    img.style.opacity = '0'
     img.style.transform = 'scale(0)'
 
     img.onload = () => {
@@ -91,14 +91,19 @@ class App {
     gsap.fromTo(
       img,
       {
-        // autoAlpha: 0,
+        autoAlpha: 0,
         scale: 0,
+        // random rotation on spawn between -  and 15 degrees
+        rotateZ: Math.random() * 40 - 20,
       },
       {
-        // autoAlpha: 1,
+        autoAlpha: 1,
         scale: 1,
         duration: 0.5,
-        onComplete: () => {
+        ease: 'back.out(2)',
+        // random rotation on spawn between -15  and 15 degrees
+        rotateZ: Math.random() * 40 - 20,
+        onStart: () => {
           // // remove image after 5 seconds
           // setTimeout(() => {
           //   this.removeImage(img)
@@ -123,33 +128,24 @@ class App {
     // remove image after 5 seconds
     if (!img) return
 
-    console.log(img, this.assets)
+    // console.log(img, this.assets)
 
-    // gsap.to(img, {
-    //   autoAlpha: 0,
-    //   scale: 0,
-    //   duration: 0.5,
-    //   onComplete: () => {
-    //     this.wrapper?.removeChild(img)
-    //     this.assets.shift()
-    //   },
-    // })
-
-    // gsap flip
-    const state = Flip.getState(img)
-
-    Flip.from(state, {
+    gsap.to(img, {
+      autoAlpha: 0,
+      scale: 0,
+      duration: 1,
+      ease: 'back.out(2)',
+      rotateZ: Math.random() * 30 - 15,
       onStart: () => {
         const asset = this.assets.find((asset) => asset.img === img)
         if (asset) {
           asset.beingRemoved = true
         }
       },
-      duration: 0.5,
-      scale: true,
-      scaleX: 0,
-      scaleY: 0,
-      // autoAlpha: 0,
+      // onComplete: () => {
+      //   this.wrapper?.removeChild(img)
+      //   this.assets.shift()
+      // },
       onComplete: () => {
         console.log('removed')
         this.wrapper?.removeChild(img)
@@ -157,28 +153,44 @@ class App {
         if (asset) {
           asset.beingRemoved = false
         }
-        // this.assets.shift()
+        this.assets.shift()
       },
     })
 
-    // gsap.to(img, {
-    //   autoAlpha: 0,
-    //   scale: 0,
-    //   duration: 0.5,
+    // gsap flip
+    // const state = Flip.getState(img)
+
+    // Flip.from(state, {
+    //   onStart: () => {
+    //     const asset = this.assets.find((asset) => asset.img === img)
+    //     if (asset) {
+    //       asset.beingRemoved = true
+    //     }
+    //   },
+    //   duration: 0.3,
+    //   scale: true,
+    //   scaleX: 0,
+    //   scaleY: 0,
+    //   // autoAlpha: 0,
     //   onComplete: () => {
+    //     console.log('removed')
     //     this.wrapper?.removeChild(img)
+    //     const asset = this.assets.find((asset) => asset.img === img)
+    //     if (asset) {
+    //       asset.beingRemoved = false
+    //     }
     //     this.assets.shift()
     //   },
     // })
   }
 
   addEventListeners() {
-    window.addEventListener('click', (e) => {
+    window.addEventListener('mousemove', (e) => {
       // call spawn if mouse move delta is over 100
       this.mouse.currX = e.clientX - this.mouse.prevX
       this.mouse.currY = e.clientY - this.mouse.prevY
 
-      if (Math.abs(this.mouse.currX) > 100 || Math.abs(this.mouse.currY) > 100) {
+      if (Math.abs(this.mouse.currX) > 150 || Math.abs(this.mouse.currY) > 150) {
         this.spawn({ x: e.clientX, y: e.clientY })
         this.mouse.prevX = e.clientX
         this.mouse.prevY = e.clientY
