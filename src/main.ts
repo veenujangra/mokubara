@@ -21,6 +21,8 @@ class App {
 
   library: HTMLImageElement[] = []
 
+  timeout: any
+
   constructor() {
     this.wrapper = null
     this.assets = [
@@ -155,7 +157,7 @@ class App {
       gsap.to(assets[index]?.img, {
         autoAlpha: 0,
         scale: 0,
-        duration: 1,
+        duration: 1.2,
         ease: 'back.out(3)',
         rotateZ: Math.random() * 20 - 10,
         onStart: () => {
@@ -180,16 +182,30 @@ class App {
     }
   }
 
+  detectInactivity() {
+    this.timeout = setTimeout(() => {
+      console.log('inactivity')
+      for (let i = 0; i < this.assets.length; i++) {
+        this.removeImage(this.assets, i)
+      }
+    }, 2000)
+  }
+
   addEventListeners() {
     window.addEventListener('mousemove', (e) => {
       // call spawn if mouse move delta is over 100
       this.mouse.currX = e.clientX - this.mouse.prevX
       this.mouse.currY = e.clientY - this.mouse.prevY
 
+      clearTimeout(this.timeout)
+
       if (Math.abs(this.mouse.currX) > 100 || Math.abs(this.mouse.currY) > 100) {
         this.spawn({ x: e.clientX, y: e.clientY })
         this.mouse.prevX = e.clientX
         this.mouse.prevY = e.clientY
+      } else if (Math.abs(this.mouse.currX) < 100 || Math.abs(this.mouse.currY) < 100) {
+        // console.log('inactivity')
+        this.detectInactivity()
       }
     })
   }
