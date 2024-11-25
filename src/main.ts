@@ -33,6 +33,9 @@ class App {
         beingRemoved: false,
       },
     ]
+
+    this.assets.shift()
+
     this.mouse = {
       prevX: 0,
       prevY: 0,
@@ -60,8 +63,6 @@ class App {
     // this.assets[0].img.onload = () => {
     //   console.log('asset loaded')
     // }
-    // this.assets.shift()
-
     // load library
     for (let i = 0; i < 8; i++) {
       const img = new Image()
@@ -128,17 +129,12 @@ class App {
         // random rotation on spawn between -15  and 15 degrees
         rotateZ: Math.random() * 20 - 10,
         onStart: () => {
-          // // remove image after 5 seconds
-          // setTimeout(() => {
-          //   this.removeImage(img)
-          // }, 5000)
-          // // this.removeImage(img)
-          // console.log(img.getBoundingClientRect().width), img.getBoundingClientRect().height
           // remove image if it's more than 5
           if (this.assets.length > 5) {
             const count = this.assets.length - 5
             for (let i = 0; i < count; i++) {
               if (this.assets[i].img && !this.assets[i].beingRemoved) {
+                this.assets[i].beingRemoved = true
                 this.removeImage(this.assets, i)
               }
             }
@@ -150,7 +146,7 @@ class App {
 
   removeImage(assets: [{ img: HTMLImageElement | null; x: number; y: number; beingRemoved: boolean }] | null, index: number) {
     // remove image after 5 seconds
-    if (assets && !assets[index]?.img) return
+    if (assets && !assets[index]?.img && !assets[index].beingRemoved) return
 
     // console.log(img, this.assets)
     if (assets) {
@@ -160,22 +156,32 @@ class App {
         duration: 1.2,
         ease: 'back.out(3)',
         rotateZ: Math.random() * 20 - 10,
-        onStart: () => {
-          if (assets[index]?.img && !assets[index].beingRemoved) {
-            assets[index].beingRemoved = true
-          }
-        },
+        // onStart: () => {
+        //   if (assets[index]?.img && !assets[index].beingRemoved) {
+        //     assets[index].beingRemoved = true
+        //   }
+        // },
         onComplete: () => {
           // console.log('removed')
           // check if image is being removed
-          if (assets[index].beingRemoved) return
-          // remove image from dom and assets array
+
+          // if (!assets[index]) return
+          // console.log(index)
+          // // remove image from dom and assets array
+          // if (assets[index]?.img) {
+          //   // this.assets.shift()
+          //   this.wrapper?.removeChild(assets[index]?.img)
+          //   console.log('removed', index)
+
+          //   if (assets[index]?.img) {
+          //     assets[index].beingRemoved = false
+          //   }
+          // }
+
           if (assets[index]?.img) {
-            this.wrapper?.removeChild(assets[index]?.img)
-            if (assets[index]?.img) {
-              assets[index].beingRemoved = false
+            if (this.wrapper?.contains(assets[index]?.img)) {
+              this.wrapper.removeChild(assets[index]?.img)
             }
-            this.assets.shift()
           }
         },
       })
@@ -188,6 +194,7 @@ class App {
       for (let i = 0; i < this.assets.length; i++) {
         this.removeImage(this.assets, i)
       }
+      // this.assets.splice(0, this.assets.length)
     }, 2000)
   }
 
