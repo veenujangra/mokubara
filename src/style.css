@@ -2,7 +2,7 @@ html,
 body {
   margin: 0;
   padding: 0;
-  // background-color: black;
+  /* background-color: black; */
 }
 .canvas,
 .wrapper {
@@ -12,10 +12,11 @@ body {
 }
 
 .image {
-  width: 16rem;
-  height: 24rem;
+  width: 14rem;
+  height: 16rem;
   position: absolute;
   inset: auto;
   margin: auto;
+  object-fit: cover;
   // pointer-events: none;
 }

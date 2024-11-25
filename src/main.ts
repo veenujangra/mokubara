@@ -1,6 +1,5 @@
 import './style.css'
 import gsap from 'gsap'
-import { Flip } from 'gsap/Flip'
 
 class App {
   wrapper: HTMLElement | null
@@ -18,6 +17,9 @@ class App {
     currX: number | 0
     currY: number | 0
   }
+  count: number = 0
+
+  library: HTMLImageElement[] = []
 
   constructor() {
     this.wrapper = null
@@ -35,44 +37,64 @@ class App {
       currX: 0,
       currY: 0,
     }
-
+    this.count = 0
+    this.library = []
     this.init()
-
-    this.load()
-
-    this.addEventListeners()
   }
 
-  init() {
+  async init() {
     this.wrapper = document.createElement('div')
     this.wrapper.classList.add('wrapper')
     document.body.prepend(this.wrapper)
 
-    // register plugins
-    gsap.registerPlugin(Flip)
+    await this.load()
+    this.addEventListeners()
   }
 
-  load() {
-    this.assets[0].img = new Image()
-    this.assets[0].img.src = '/black.jpg'
-    this.assets[0].img.onload = () => {
-      console.log('asset loaded')
+  async load() {
+    // load assets
+    // this.assets[0].img = new Image()
+    // this.assets[0].img.src = '/black.jpg'
+    // this.assets[0].img.onload = () => {
+    //   console.log('asset loaded')
+    // }
+    // this.assets.shift()
+
+    // load library
+    for (let i = 0; i < 8; i++) {
+      const img = new Image()
+      img.src = `/${i + 1}.jpg`
+
+      img.onload = () => {
+        if (this.library) {
+          this.library[i] = img
+        }
+      }
     }
-    this.assets.shift()
   }
 
   // Spawn function
   spawn(mouse: { x: number; y: number }) {
     const img = document.createElement('img')
-    img.src = '/black.jpg'
+    const random = this.getImageIndex()
+
+    if (this.library) {
+      img.src = `${this.library[random].src}`
+    }
     img.className = `image image-${this.assets.length}`
     img.style.position = 'absolute'
     img.style.opacity = '0'
     img.style.transform = 'scale(0)'
+    img.style.zIndex = (this.count++).toString()
 
     img.onload = () => {
       this.spawnAnimation(img, mouse)
     }
+  }
+
+  getImageIndex() {
+    const mod = this.count % this.library.length
+    return mod
   }
 
   spawnAnimation(img: HTMLImageElement, mouse: { x: number; y: number }) {
@@ -93,16 +115,16 @@ class App {
       {
         autoAlpha: 0,
         scale: 0,
-        // random rotation on spawn between -  and 15 degrees
-        rotateZ: Math.random() * 40 - 20,
+        // random rotation on spawn between -15  and 15 degrees
+        rotateZ: Math.random() * 20 - 10,
       },
       {
         autoAlpha: 1,
         scale: 1,
-        duration: 0.5,
-        ease: 'back.out(2)',
+        duration: 0.4,
+        ease: 'back.out(3.75)',
         // random rotation on spawn between -15  and 15 degrees
-        rotateZ: Math.random() * 40 - 20,
+        rotateZ: Math.random() * 20 - 10,
         onStart: () => {
           // // remove image after 5 seconds
           // setTimeout(() => {
@@ -115,7 +137,7 @@ class App {
             const count = this.assets.length - 5
             for (let i = 0; i < count; i++) {
               if (this.assets[i].img && !this.assets[i].beingRemoved) {
-                this.removeImage(this.assets[i].img)
+                this.removeImage(this.assets, i)
               }
             }
           }
@@ -124,64 +146,38 @@ class App {
     )
   }
 
-  removeImage(img: HTMLImageElement | null) {
+  removeImage(assets: [{ img: HTMLImageElement | null; x: number; y: number; beingRemoved: boolean }] | null, index: number) {
     // remove image after 5 seconds
-    if (!img) return
+    if (assets && !assets[index]?.img) return
 
     // console.log(img, this.assets)
-
-    gsap.to(img, {
-      autoAlpha: 0,
-      scale: 0,
-      duration: 1,
-      ease: 'back.out(2)',
-      rotateZ: Math.random() * 30 - 15,
-      onStart: () => {
-        const asset = this.assets.find((asset) => asset.img === img)
-        if (asset) {
-          asset.beingRemoved = true
-        }
-      },
-      // onComplete: () => {
-      //   this.wrapper?.removeChild(img)
-      //   this.assets.shift()
-      // },
-      onComplete: () => {
-        console.log('removed')
-        this.wrapper?.removeChild(img)
-        const asset = this.assets.find((asset) => asset.img === img)
-        if (asset) {
-          asset.beingRemoved = false
-        }
-        this.assets.shift()
-      },
-    })
-
-    // gsap flip
-    // const state = Flip.getState(img)
-
-    // Flip.from(state, {
-    //   onStart: () => {
-    //     const asset = this.assets.find((asset) => asset.img === img)
-    //     if (asset) {
-    //       asset.beingRemoved = true
-    //     }
-    //   },
-    //   duration: 0.3,
-    //   scale: true,
-    //   scaleX: 0,
-    //   scaleY: 0,
-    //   // autoAlpha: 0,
-    //   onComplete: () => {
-    //     console.log('removed')
-    //     this.wrapper?.removeChild(img)
-    //     const asset = this.assets.find((asset) => asset.img === img)
-    //     if (asset) {
-    //       asset.beingRemoved = false
-    //     }
-    //     this.assets.shift()
-    //   },
-    // })
+    if (assets) {
+      gsap.to(assets[index]?.img, {
+        autoAlpha: 0,
+        scale: 0,
+        duration: 1,
+        ease: 'back.out(3)',
+        rotateZ: Math.random() * 20 - 10,
+        onStart: () => {
+          if (assets[index]?.img && !assets[index].beingRemoved) {
+            assets[index].beingRemoved = true
+          }
+        },
+        onComplete: () => {
+          // console.log('removed')
+          // check if image is being removed
+          if (assets[index].beingRemoved) return
+          // remove image from dom and assets array
+          if (assets[index]?.img) {
+            this.wrapper?.removeChild(assets[index]?.img)
+            if (assets[index]?.img) {
+              assets[index].beingRemoved = false
+            }
+            this.assets.shift()
+          }
+        },
+      })
+    }
   }
 
   addEventListeners() {
@@ -190,16 +186,11 @@ class App {
       this.mouse.currX = e.clientX - this.mouse.prevX
       this.mouse.currY = e.clientY - this.mouse.prevY
 
-      if (Math.abs(this.mouse.currX) > 150 || Math.abs(this.mouse.currY) > 150) {
+      if (Math.abs(this.mouse.currX) > 100 || Math.abs(this.mouse.currY) > 100) {
         this.spawn({ x: e.clientX, y: e.clientY })
         this.mouse.prevX = e.clientX
         this.mouse.prevY = e.clientY
       }
-
-      // if (Math.abs(e.movementX) > 4 || Math.abs(e.movementY) > 4) {
-      //   this.spawn({ x: e.clientX, y: e.clientY })
-      //   // console.log(e.movementX, e.movementY)
-      // }
     })
   }
 }
